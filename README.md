@@ -6,7 +6,7 @@ Works under Linux(Manjaro, Ubuntu) without additional drivers(only V4L2 needed).
 ### Requirements
  - 2 cameras,
  - V4L2 library(if under linux and only for ps eye cameras),
- - OpenCV.
+ - built OpenCV or Conan package manager.
  
 ### Install
 ```
