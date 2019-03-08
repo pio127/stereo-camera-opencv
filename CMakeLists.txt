@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 find_package(OpenCV)
 
 if(OpenCV_FOUND)
-    include_directories(include ${OpenCV_INCLUDE_DIRS})
+    include_directories(include ${OpenCV_INCLUDE_DIRS} src)
     add_executable(cameraTest src/cameraTest.cpp)
     add_executable(calibration src/calibration.cpp)
     add_executable(depthMap src/depthMap.cpp)
