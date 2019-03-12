@@ -1,17 +1,36 @@
 #include "stereoCapture.h"
 
 StereoCapture::StereoCapture() {
-  cap1.open(0);
-  cap2.open(1);
-  if (!cap1.isOpened()) {
-    std::cerr << "Camera /dev/video0 could not be opened\n";
-    camerasAreReady = false;
+  int repeatTest = 5;
+  int afterTrying = 0;
+  for(int x = 0; x < repeatTest; ++x) {
+    afterTrying = x;
+    cap1.open(0);
+    cap2.open(1);
+    if (!cap1.isOpened()) {
+      std::cerr << "Camera /dev/video0 could not be opened\n";
+      camerasAreReady = false;
+    }
+    if (!cap2.isOpened()) {
+      std::cerr << "Camera /dev/video1 could not be opened\n";
+      camerasAreReady = false;
+    }
+
+    // Test by capturing image from both cameras
+    cv::Mat frame1, frame2;
+    if (!cap1.read(frame1) || !cap2.read(frame2)) {
+      std::cerr << "Cold not grab both frames\n";
+    } else {
+      camerasAreReady = true;
+      break;
+    }
   }
-  if (!cap2.isOpened()) {
-    std::cerr << "Camera /dev/video1 could not be opened\n";
-    camerasAreReady = false;
+  std::cout << "After trying " << afterTrying+1 << " times:\n";
+  if (camerasAreReady) {
+    std::cout << "Both cameras are working\n";
+  } else {
+    std::cerr << "Both cameras are not working\n";
   }
-  camerasAreReady = true;
 }
 
 StereoCapture::~StereoCapture() {
@@ -19,7 +38,7 @@ StereoCapture::~StereoCapture() {
   cap2.release();
 }
 
-bool StereoCapture::isReady() { return camerasAreReady; }
+bool StereoCapture::areReady() { return camerasAreReady; }
 
 bool StereoCapture::readFrames(cv::Mat &frame1, cv::Mat &frame2) {
   // Copy both frames to internal buffer first and then decoding
