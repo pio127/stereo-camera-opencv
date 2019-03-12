@@ -85,8 +85,10 @@ bool depthMap(std::string filename) {
 
     cv::cvtColor(L, LG, CV_BGR2GRAY);
     cv::cvtColor(P, PG, CV_BGR2GRAY);
-    remap(LG, L2, map1x, map1y, cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar());
-    remap(PG, P2, map2x, map2y, cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar());
+    remap(LG, L2, map1x, map1y, cv::INTER_LINEAR, cv::BORDER_CONSTANT,
+          cv::Scalar());
+    remap(PG, P2, map2x, map2y, cv::INTER_LINEAR, cv::BORDER_CONSTANT,
+          cv::Scalar());
 
     sbm->compute(L2, P2, disp);
     normalize(disp, disp2, 0, 255, CV_MINMAX, CV_8U);

@@ -1,8 +1,4 @@
-#include "opencv2/calib3d.hpp"
-#include "opencv2/core.hpp"
-#include "opencv2/features2d.hpp"
-#include "opencv2/highgui.hpp"
-#include <iostream>
+#include "stereoCapture.h"
 #include <string>
 #include <vector>
 
@@ -17,21 +13,14 @@ bool calibrate(std::string filename, int numOfFrames) {
 
   std::vector<cv::Point2f> points1;
   std::vector<cv::Point2f> points2;
-  cv::Mat L;
-  cv::Mat P;
-  cv::Mat Lf;
-  cv::Mat Pf;
+  cv::Mat frame1, frame2;
   std::vector<cv::Point3f> obj;
+  bool found1, found2;
+  StereoCapture cameras{};
 
-  cv::VideoCapture cap1(0);
-  cv::VideoCapture cap2(1);
 
-  if (cap1.isOpened() == false) {
-    std::cerr << "Camera 1 did not start\n";
-    return false;
-  }
-  if (cap2.isOpened() == false) {
-    std::cerr << "Camera 2 did not start\n";
+  if (!cameras.isReady()) {
+    return 1;
   }
 
   // Chessboard pattern generation
@@ -42,29 +31,24 @@ bool calibrate(std::string filename, int numOfFrames) {
   }
 
   while (true) {
-    cap1.read(L);
-    cap2.read(P);
+    cameras.readFrames(frame1, frame2);
 
-    bool found_L = cv::findChessboardCorners(L, cv::Size(6, 9), points1,
+    found1 = cv::findChessboardCorners(frame1, cv::Size(6, 9), points1,
                                              CV_CALIB_CB_ADAPTIVE_THRESH |
-                                                 CV_CALIB_CB_NORMALIZE_IMAGE);
-    L.copyTo(Lf);
-    drawChessboardCorners(Lf, cv::Size(6, 9), points1, found_L);
+                                             CV_CALIB_CB_NORMALIZE_IMAGE);
 
-    bool found_P = cv::findChessboardCorners(P, cv::Size(6, 9), points2,
+    found2 = cv::findChessboardCorners(frame2, cv::Size(6, 9), points2,
                                              CV_CALIB_CB_ADAPTIVE_THRESH |
-                                                 CV_CALIB_CB_NORMALIZE_IMAGE);
-    P.copyTo(Pf);
-    drawChessboardCorners(Pf, cv::Size(6, 9), points2, found_P);
+                                             CV_CALIB_CB_NORMALIZE_IMAGE);
+    if (found1) {
+      drawChessboardCorners(frame1, cv::Size(6, 9), points1, found1);
+    }
+    if (found2) {
+      drawChessboardCorners(frame2, cv::Size(6, 9), points2, found2);
+    }
 
-    if (found_L)
-      cv::imshow("Kamera Lewa", Lf);
-    else
-      cv::imshow("Kamera Lewa", L);
-    if (found_P)
-      cv::imshow("Kamera Prawa", Pf);
-    else
-      cv::imshow("Kamera Prawa", P);
+    cv::imshow("Kamera 1", frame1);
+    cv::imshow("Kamera 2", frame2);
 
     // if (found_L && found_P)
     //{
@@ -76,14 +60,14 @@ bool calibrate(std::string filename, int numOfFrames) {
     //  count++;
     //}
 
-    if (found_L && found_P) {
+    if (found1 && found2) {
       imagePoints1.push_back(points1);
       imagePoints2.push_back(points2);
       objectPoints.push_back(obj);
       std::cout << "Zebrano pomiar " << count << std::endl;
       count++;
     }
-    if (count == numOfFrames || cv::waitKey(1) == 27) {
+    if (count == numOfFrames || cv::waitKey(30) == 27) {
       break;
     }
   }
@@ -96,12 +80,12 @@ bool calibrate(std::string filename, int numOfFrames) {
       cv::Mat R, T, E, F;
 
       cv::stereoCalibrate(
-          objectPoints, imagePoints1, imagePoints2, CM1, D1, CM2, D2, L.size(),
+          objectPoints, imagePoints1, imagePoints2, CM1, D1, CM2, D2, frame1.size(),
           R, T, E, F, cv::CALIB_FIX_INTRINSIC,
           cv::TermCriteria(CV_TERMCRIT_ITER + CV_TERMCRIT_EPS, 100, 1e-5));
 
       cv::Mat R1, R2, P1, P2, Q;
-      cv::stereoRectify(CM1, D1, CM2, D2, L.size(), R, T, R1, R2, P1, P2, Q);
+      //cv::stereoRectify(CM1, D1, CM2, D2, L.size(), R, T, R1, R2, P1, P2, Q);
 
       cv::FileStorage fs(filename + ".yml", cv::FileStorage::WRITE);
       fs << "CM1" << CM1;
@@ -117,10 +101,8 @@ bool calibrate(std::string filename, int numOfFrames) {
       fs << "P1" << P1;
       fs << "P2" << P2;
       fs << "Q" << Q;
-      fs << "Size" << L.size();
+      fs << "Size" << frame1.size();
       std::cout << "Calibration complete" << std::endl;
     }
-    cap1.release();
-    cap2.release();
     return true;
 }
