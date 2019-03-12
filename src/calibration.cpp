@@ -2,6 +2,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <vector>
+#include <filesystem>
 
 // bool calibrate(std::string, int);
 bool gatherFramesForCalibration(std::string folderName, int numOfFrames);
@@ -9,9 +10,14 @@ bool calibrate(std::string imagesFolderName, std::string calibrationFileName,
                int numOfFrames);
 
 int main() {
-  gatherFramesForCalibration("calibration_images", 20);
-  calibrate("calibration_images", "calibration_file", 20);
-  cv::destroyAllWindows();
+  std::string calibImagesFolder = "calibration_images2";
+  gatherFramesForCalibration(calibImagesFolder, 20);
+
+  //std::filesystem::path workingPath = std::filesystem::current_path();
+  //std::string workingPath_str = workingPath.string();
+  //std::cout << workingPath_str << "\n";
+
+  calibrate("/home/piotr/Projects/stereoCam/build/bin/" + calibImagesFolder, "calibration_file", 20);
 }
 
 bool gatherFramesForCalibration(std::string folderName, int numOfFrames) {
@@ -21,15 +27,19 @@ bool gatherFramesForCalibration(std::string folderName, int numOfFrames) {
   std::vector<cv::Point2f> points2;
   std::vector<cv::Point3f> obj;
   cv::Mat frame1, frame2;
+  cv::Mat frame1ForSave, frame2ForSave;
   bool found1, found2;
   StereoCapture cameras{};
+
 
   if (!cameras.areReady()) {
     return 1;
   }
 
-  if (mkdir(folderName.c_str(), 0777)) {
+  if (!mkdir(folderName.c_str(), 0777)) {
     std::cout << "Folder " << folderName << " created\n";
+  } else {
+    std::cout << "Folder " << folderName << " already exists\n";
   }
 
   // Chessboard pattern generation
@@ -51,9 +61,11 @@ bool gatherFramesForCalibration(std::string folderName, int numOfFrames) {
                                        CV_CALIB_CB_ADAPTIVE_THRESH |
                                            CV_CALIB_CB_FAST_CHECK);
     if (found1) {
+      frame1.copyTo(frame1ForSave);
       drawChessboardCorners(frame1, cv::Size(6, 9), points1, found1);
     }
     if (found2) {
+      frame2.copyTo(frame2ForSave);
       drawChessboardCorners(frame2, cv::Size(6, 9), points2, found2);
     }
 
@@ -66,8 +78,8 @@ bool gatherFramesForCalibration(std::string folderName, int numOfFrames) {
       nameImage1 = folderName + "/" + std::to_string(count) + "_0.jpg";
       nameImage2 = folderName + "/" + std::to_string(count) + "_1.jpg";
 
-      imwrite(nameImage1, frame1);
-      imwrite(nameImage2, frame2);
+      imwrite(nameImage1, frame1ForSave);
+      imwrite(nameImage2, frame2ForSave);
       std::cout << "Zapisono obrazy " << count << std::endl;
       count++;
     }
@@ -75,6 +87,7 @@ bool gatherFramesForCalibration(std::string folderName, int numOfFrames) {
       break;
     }
   }
+  cv::destroyAllWindows();
   return true;
 }
 bool calibrate(std::string imagesFolderName, std::string calibrationFileName,
@@ -126,9 +139,9 @@ bool calibrate(std::string imagesFolderName, std::string calibrationFileName,
                                        CV_CALIB_CB_ADAPTIVE_THRESH |
                                            CV_CALIB_CB_FAST_CHECK);
     if (found1 && found2) {
-      imagePoints1.emplace_back(points1);
-      imagePoints2.emplace_back(points2);
-      calibrationPatternPoints.emplace_back(obj);
+      imagePoints1.push_back(points1);
+      imagePoints2.push_back(points2);
+      calibrationPatternPoints.push_back(obj);
     }
     count++;
   }
