@@ -1,12 +1,15 @@
-#include "stereoCapture.h"
 #include "opencv2/opencv.hpp"
+#include "stereoCapture.h"
 #include <iostream>
 #include <string>
 #include <vector>
 
 bool depthMap(std::string);
 
-int main() { depthMap("calibration_file.yml"); }
+int main() {
+  std::string workingDirectory = "/home/piotr/Projects/stereoCam/build/bin/";
+  depthMap(workingDirectory + "calibration_file.yml");
+}
 
 bool depthMap(std::string filename) {
   cv::Mat frame1, frame2, frame1Gray, frame2Gray, frame1Remapped,
@@ -15,7 +18,6 @@ bool depthMap(std::string filename) {
   cv::Mat map1x, map1y, map2x, map2y;
   cv::Mat imgU1, imgU2;
   cv::Size size;
-
   int numDisparities = 0;
   int BlockSize = 7;
   int SpeckleWindowSize = 400;
@@ -46,6 +48,19 @@ bool depthMap(std::string filename) {
   fs["P2"] >> P2;
   fs["Size"] >> size;
 
+  cv::namedWindow("dispmap");
+  cv::createTrackbar("numDisparities*16", "dispmap", &numDisparities, 20);
+  cv::createTrackbar("BlockSize*2", "dispmap", &BlockSize, 100);
+  cv::createTrackbar("SpeckleWindowSize", "dispmap", &SpeckleWindowSize, 1000);
+  cv::createTrackbar("SpeckleRange", "dispmap", &SpeckleRange, 31);
+  cv::createTrackbar("MinDisparity-100", "dispmap", &MinDisparity, 200);
+  cv::createTrackbar("UniquenessRatio", "dispmap", &UniquenessRatio, 100);
+  cv::createTrackbar("Disp12MaxDiff", "dispmap", &Disp12MaxDiff, 255);
+  cv::createTrackbar("PreFilterCap", "dispmap", &PreFilterCap, 62);
+  cv::createTrackbar("PreFilterSize", "dispmap", &PreFilterSize, 20);
+  cv::createTrackbar("TextureThreshold", "dispmap", &TextureThreshold, 4000);
+
+
   cv::initUndistortRectifyMap(CM1, D1, R1, P1, size, CV_16SC2, map1x, map1y);
   cv::initUndistortRectifyMap(CM2, D2, R2, P2, size, CV_16SC2, map2x, map2y);
 
@@ -61,17 +76,6 @@ bool depthMap(std::string filename) {
   // sbm.state->speckleRange = 8;
   // sbm.state->disp12MaxDiff = 1;
 
-  sbm->setNumDisparities(16 * (numDisparities + 1));
-  sbm->setBlockSize(2 * BlockSize + 5);
-  sbm->setPreFilterCap(PreFilterCap + 1);
-  sbm->setPreFilterSize(2 * PreFilterSize + 5);
-  sbm->setTextureThreshold(TextureThreshold);
-  sbm->setSpeckleWindowSize(SpeckleWindowSize);
-  sbm->setSpeckleRange(SpeckleRange);
-  sbm->setMinDisparity(MinDisparity - 100);
-  sbm->setUniquenessRatio(UniquenessRatio);
-  sbm->setDisp12MaxDiff(Disp12MaxDiff);
-
   while (true) {
     cameras.readFrames(frame1, frame2);
 
@@ -82,15 +86,26 @@ bool depthMap(std::string filename) {
     remap(frame2Gray, frame2Remapped, map2x, map2y, cv::INTER_LINEAR,
           cv::BORDER_CONSTANT, cv::Scalar());
 
+    sbm->setNumDisparities(16 * (numDisparities + 1));
+    sbm->setBlockSize(2 * BlockSize + 5);
+    sbm->setPreFilterCap(PreFilterCap + 1);
+    sbm->setPreFilterSize(2 * PreFilterSize + 5);
+    sbm->setTextureThreshold(TextureThreshold);
+    sbm->setSpeckleWindowSize(SpeckleWindowSize);
+    sbm->setSpeckleRange(SpeckleRange);
+    sbm->setMinDisparity(MinDisparity - 100);
+    sbm->setUniquenessRatio(UniquenessRatio);
+    sbm->setDisp12MaxDiff(Disp12MaxDiff);
     sbm->compute(frame1Remapped, frame2Remapped, disp);
     normalize(disp, disp2, 0, 255, CV_MINMAX, CV_8U);
 
     cv::imshow("Kamera Lewa", frame1Remapped);
     cv::imshow("Kamera Prawa", frame2Remapped);
-    cv::imshow("disp", disp2);
-    if (cv::waitKey(1) == 27){
+    cv::imshow("dispmap", disp2);
+    if (cv::waitKey(1) == 27) {
       break;
-    } 
+    }
   }
+  cv::destroyAllWindows();
   return true;
 }
