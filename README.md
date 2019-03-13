@@ -21,8 +21,8 @@ cmake ..
 cmake --build .
 ```
 Notes:
- -If there is already an OpenCV library installed then conan install is not needed.
- -For problems with dependency packages(such as pre-built packages not found) conan install .. --build=missing should help. It builds them directly from sources.
+ - If there is already an OpenCV library installed then conan install is not needed.
+ - For problems with dependency packages(such as pre-built packages not found) conan install .. --build=missing should help. It builds them directly from sources.
 
 ### Info
 There are 3 executables:
