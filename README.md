@@ -4,7 +4,7 @@ Using 2 PS3 Eye cameras to get depth map.
 
 Works under Linux(Manjaro, Ubuntu, Raspberry Pi3 running Rasbian) without additional drivers because of ov534 driver coming with kernel.
 
-For Windows it's more tricky to get it working(https://github.com/psmoveservice/PSMoveService/wiki/PSEye-Software-Setup-%28Windows%29).
+For Windows it's trickier to get it working(https://github.com/psmoveservice/PSMoveService/wiki/PSEye-Software-Setup-%28Windows%29).
 
 
 # Requirements
