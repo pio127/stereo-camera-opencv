@@ -9,15 +9,23 @@ bool gatherFramesForCalibration(std::string folderName, int numOfFrames);
 bool calibrate(std::string imagesFolderName, std::string calibrationFileName,
                int numOfFrames);
 
-int main() {
-  std::string calibImagesFolder = "calibration_images2";
-  gatherFramesForCalibration(calibImagesFolder, 20);
+int main(int argc, char *argv[]) {
+	
+	std::string calibImagesFolder;
+	if (argc > 1) {
+	  calibImagesFolder = argv[1];
+		std::cout << "Using folder: " << calibImagesFolder << '\n';
+	} else {	
+ 	  calibImagesFolder = "calibration_images";
+		std::cout << "Using default folder: " << calibImagesFolder << '\n';
+  }
+	gatherFramesForCalibration(calibImagesFolder, 20);
 
   //std::filesystem::path workingPath = std::filesystem::current_path();
   //std::string workingPath_str = workingPath.string();
   //std::cout << workingPath_str << "\n";
 
-  calibrate("/home/piotr/Projects/stereoCam/build/bin/" + calibImagesFolder, "calibration_file", 20);
+  calibrate(calibImagesFolder, "calibration_file", 20);
 }
 
 bool gatherFramesForCalibration(std::string folderName, int numOfFrames) {
@@ -146,6 +154,10 @@ bool calibrate(std::string imagesFolderName, std::string calibrationFileName,
     count++;
   }
 
+	if (count == 0) {
+		std::cout << "Error: could not read images from folder: " << imagesFolderName << '\n';
+	return false;
+}
   std::cout << "Kalibracja..." << std::endl;
 
   cv::stereoCalibrate(

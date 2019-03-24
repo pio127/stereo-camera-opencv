@@ -6,9 +6,14 @@
 
 bool depthMap(std::string);
 
-int main() {
-  std::string workingDirectory = "/home/piotr/Projects/stereoCam/build/bin/";
-  depthMap(workingDirectory + "calibration_file.yml");
+int main(int argc, char *argv[]) {
+	std::string calibrationFile;
+	if (argc > 1) {
+		calibrationFile = argv[1];	
+	} else {
+  calibrationFile = "calibration_file.yml";
+	}
+  depthMap(calibrationFile);
 }
 
 bool depthMap(std::string filename) {
