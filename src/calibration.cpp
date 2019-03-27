@@ -2,7 +2,6 @@
 #include <string>
 #include <sys/stat.h>
 #include <vector>
-#include <filesystem>
 
 // bool calibrate(std::string, int);
 bool gatherFramesForCalibration(std::string folderName, int numOfFrames);
