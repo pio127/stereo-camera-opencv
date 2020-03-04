@@ -61,12 +61,12 @@ bool gatherFramesForCalibration(std::string folderName, int numOfFrames) {
     cameras.readFrames(frame1, frame2);
 
     found1 = cv::findChessboardCorners(frame1, cv::Size(6, 9), points1,
-                                       CV_CALIB_CB_ADAPTIVE_THRESH |
-                                           CV_CALIB_CB_FAST_CHECK);
+                                       cv::CALIB_CB_ADAPTIVE_THRESH |
+                                           cv::CALIB_CB_FAST_CHECK);
 
     found2 = cv::findChessboardCorners(frame2, cv::Size(6, 9), points2,
-                                       CV_CALIB_CB_ADAPTIVE_THRESH |
-                                           CV_CALIB_CB_FAST_CHECK);
+                                       cv::CALIB_CB_ADAPTIVE_THRESH |
+                                           cv::CALIB_CB_FAST_CHECK);
     if (found1) {
       frame1.copyTo(frame1ForSave);
       drawChessboardCorners(frame1, cv::Size(6, 9), points1, found1);
@@ -139,12 +139,12 @@ bool calibrate(std::string imagesFolderName, std::string calibrationFileName,
     }
 
     found1 = cv::findChessboardCorners(frame1, cv::Size(6, 9), points1,
-                                       CV_CALIB_CB_ADAPTIVE_THRESH |
-                                           CV_CALIB_CB_FAST_CHECK);
+                                       cv::CALIB_CB_ADAPTIVE_THRESH |
+                                           cv::CALIB_CB_FAST_CHECK);
 
     found2 = cv::findChessboardCorners(frame2, cv::Size(6, 9), points2,
-                                       CV_CALIB_CB_ADAPTIVE_THRESH |
-                                           CV_CALIB_CB_FAST_CHECK);
+                                       cv::CALIB_CB_ADAPTIVE_THRESH |
+                                           cv::CALIB_CB_FAST_CHECK);
     if (found1 && found2) {
       imagePoints1.push_back(points1);
       imagePoints2.push_back(points2);
@@ -152,6 +152,7 @@ bool calibrate(std::string imagesFolderName, std::string calibrationFileName,
     }
     count++;
   }
+
 
 	if (count == 0) {
 		std::cout << "Error: could not read images from folder: " << imagesFolderName << '\n';
@@ -161,8 +162,8 @@ bool calibrate(std::string imagesFolderName, std::string calibrationFileName,
 
   cv::stereoCalibrate(
       calibrationPatternPoints, imagePoints1, imagePoints2, CM1, D1, CM2, D2,
-      frameDimensions, R, T, E, F, CV_CALIB_ZERO_TANGENT_DIST,
-      cv::TermCriteria(CV_TERMCRIT_ITER + CV_TERMCRIT_EPS, 100, 1e-5));
+      frameDimensions, R, T, E, F, cv::CALIB_ZERO_TANGENT_DIST,
+      cv::TermCriteria(cv::TermCriteria::MAX_ITER + cv::TermCriteria::EPS, 100, 1e-5));
 
   std::cout << CM1;
   cv::stereoRectify(CM1, D1, CM2, D2, frameDimensions, R, T, R1, R2, P1, P2, Q);

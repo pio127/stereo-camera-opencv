@@ -86,8 +86,8 @@ bool depthMap(std::string filename) {
   while (true) {
     cameras.readFrames(frame1, frame2);
 
-    cv::cvtColor(frame1, frame1Gray, CV_BGR2GRAY);
-    cv::cvtColor(frame2, frame2Gray, CV_BGR2GRAY);
+    cv::cvtColor(frame1, frame1Gray, cv::COLOR_BGR2GRAY);
+    cv::cvtColor(frame2, frame2Gray,cv::COLOR_BGR2GRAY);
     remap(frame1Gray, frame1Remapped, map1x, map1y, cv::INTER_LINEAR,
           cv::BORDER_CONSTANT, cv::Scalar());
     remap(frame2Gray, frame2Remapped, map2x, map2y, cv::INTER_LINEAR,
@@ -118,7 +118,7 @@ bool depthMap(std::string filename) {
 	left_matcher2->setDisp12MaxDiff(Disp12MaxDiff);
 	left_matcher2->compute(frame1Remapped, frame2Remapped, disp2);
     disp2.convertTo(imgDisparity32F, CV_32F, 1./16);
-	cv::normalize(imgDisparity32F,disp2_norm,0,255,CV_MINMAX,CV_8U);
+	cv::normalize(imgDisparity32F,disp2_norm,0,255,CV_MMX,CV_8U);
 
 //	wls_filter2->filter(disp2, frame1Remapped, filtered_disp2, right_disp2);
 //	cv::ximgproc::getDisparityVis(filtered_disp2,filtered_disp2_vis);
