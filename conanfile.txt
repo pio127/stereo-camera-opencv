@@ -1,5 +1,5 @@
 [requires]
-opencv/3.4.5@conan/stable
+opencv/4.1.1@conan/stable
 
 [options]
 opencv:shared=True 
